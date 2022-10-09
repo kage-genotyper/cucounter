@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 project(cucounter_C LANGUAGES CXX CUDA)
 
+find_package(pybind11 REQUIRED)
+find_package(CUDA REQUIRED)
+
 set(CMAKE_CUDA_ARCHITECTURES "75")
 
 set(SOURCE_DIR "cucounter")
@@ -11,8 +14,4 @@ set(SOURCES
   "${SOURCE_DIR}/hashtable.cu"
 )
 
-add_subdirectory(extern/pybind11)
-
 pybind11_add_module(${PROJECT_NAME} ${SOURCES} "${SOURCE_DIR}/bindings.cpp")
-
-#set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_ARCHITECTURE "75")
