@@ -33,7 +33,7 @@ PYBIND11_MODULE(cucounter_C, m) {
       const uint32_t size = keys.size();
       self.count(data, size);
     })
-    .def("countcu", [](HashTable &self, long data_ptr, uint32_t size) {
+    .def("count", [](HashTable &self, long data_ptr, uint32_t size) {
       uint64_t *data = reinterpret_cast<uint64_t*>(data_ptr);
       self.countcu(data, size);
     })
@@ -50,7 +50,7 @@ PYBIND11_MODULE(cucounter_C, m) {
 
       return ret;
     })
-    .def("getcu", [](HashTable &self, long keys_ptr, long counts_ptr, uint32_t size) {
+    .def("get", [](HashTable &self, long keys_ptr, long counts_ptr, uint32_t size) {
       uint64_t *keys = reinterpret_cast<uint64_t*>(keys_ptr);
       uint32_t *counts = reinterpret_cast<uint32_t*>(counts_ptr);
       self.getcu(keys, counts, size);

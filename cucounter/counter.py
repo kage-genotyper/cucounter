@@ -15,7 +15,7 @@ class Counter(HashTable):
         if isinstance(keys, np.ndarray):
             super().__init__(keys, capacity)
         elif isinstance(keys, cp.ndarray):
-            super().__init__(keys.data.ptr, capacity)
+            super().__init__(keys.data.ptr, keys.size, capacity)
 
     def count(self, keys):
         assert isinstance(keys, (np.ndarray, cp.ndarray)), "Invalid key type"
@@ -23,7 +23,7 @@ class Counter(HashTable):
         if isinstance(keys, np.ndarray):
             super().count(keys)
         elif isinstance(keys, cp.ndarray):
-            super().countcu(keys.data.ptr, keys.size)
+            super().count(keys.data.ptr, keys.size)
 
     def __getitem__(self, keys):
         assert isinstance(keys, (np.ndarray, cp.ndarray)), "Invalid key type"
@@ -32,6 +32,6 @@ class Counter(HashTable):
             return super().get(keys)
         elif isinstance(keys, cp.ndarray):
             counts = cp.zeros_like(keys, dtype=np.uint32)
-            super().getcu(keys.data.ptr, counts.data.ptr, keys.size)
+            super().get(keys.data.ptr, counts.data.ptr, keys.size)
             return counts 
         
