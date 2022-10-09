@@ -10,7 +10,7 @@ class Counter(HashTable):
 
         # Dynamically determine hashtable capacity if not provided
         if capacity == 0:
-            capacity = int(keys.size * 1.2)
+            capacity = int(keys.size * 1.4)
 
         if isinstance(keys, np.ndarray):
             super().__init__(keys, capacity)
