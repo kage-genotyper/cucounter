@@ -3,6 +3,7 @@ import cupy as cp
 
 from cucounter_C import HashTable
 
+
 class Counter(HashTable):
     def __init__(self, keys, capacity=0):
         assert isinstance(keys, (np.ndarray, cp.ndarray)), "Invalid key type"
@@ -34,4 +35,3 @@ class Counter(HashTable):
             super().getcu(keys.data.ptr, counts.data.ptr, keys.size)
             return counts 
         
-
