@@ -6,19 +6,25 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#define _DEBUG
+#define _ERR_CHECK 
 
 static const uint64_t kEmpty = 0xffffffffffffffff;
 static const uint32_t vInvalid = 0xffffffff;
 
 #define cuda_errchk(err) { cuda_errcheck(err, __FILE__, __LINE__); }
 inline void cuda_errcheck(cudaError_t code, const char *file, int line, bool abort=true) {
-#ifdef _DEBUG
+#ifdef _ERR_CHECK
   if (code != cudaSuccess) {
-    fprintf(stderr, "CUDA assert: '%s', in %s, at line %d\n", cudaGetErrorString(code), file, line);
-    if (abort) { exit(code); }
+    switch (code) {
+      case 2:
+        fprintf(stderr, "CUDA out of memory error in %s at line %d\n", file, line);
+        exit(code);
+        break;
+      default:
+        fprintf(stderr, "CUDA assert: '%s', in %s, at line %d\n", cudaGetErrorString(code), file, line);
+    }
   }
-#endif // _DEBUG
+#endif // _ERR_CHECK
 }
 
 // No longer using this

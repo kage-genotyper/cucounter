@@ -5,7 +5,7 @@ from cucounter_C import HashTable
 
 
 class Counter(HashTable):
-    def __init__(self, keys, capacity=0):
+    def __init__(self, keys, capacity: int = 0):
         assert isinstance(keys, (np.ndarray, cp.ndarray)), "Invalid key type"
 
         # Dynamically determine hashtable capacity if not provided
