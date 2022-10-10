@@ -5,12 +5,15 @@ from cucounter_C import HashTable
 
 
 class Counter(HashTable):
-    def __init__(self, keys, capacity: int = 0):
+    def __init__(self, keys, capacity: int = 0, capacity_factor: float = 1.4):
         assert isinstance(keys, (np.ndarray, cp.ndarray)), "Invalid key type"
+        assert capacity_factor > 1.0, "capacity_factor must be greater than 1.0"
 
         # Dynamically determine hashtable capacity if not provided
         if capacity == 0:
-            capacity = int(keys.size * 1.4)
+            capacity = int(keys.size * capacity_factor) 
+
+        assert capacity > keys.size, "Capacity must be greater than size of keyset"
 
         if isinstance(keys, np.ndarray):
             super().__init__(keys, capacity)
