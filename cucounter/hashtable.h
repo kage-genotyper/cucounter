@@ -1,7 +1,6 @@
 #ifndef HASHTABLE_H_
 #define HASHTABLE_H_
 
-#include <iostream>
 #include <sstream>
 #include <inttypes.h>
 #include <string>
