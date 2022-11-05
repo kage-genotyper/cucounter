@@ -8,7 +8,7 @@ set(CMAKE_CUDA_ARCHITECTURES "75")
 set(CMAKE_CXX_FLAGS "-O3")
 set(CMAKE_CUDA_FLAGS "-O3")
 
-set(SOURCE_DIR "cucounter")
+set(SOURCE_DIR "cucounter/backend")
 include_directories(${SOURCE_DIR})
 
 set(SOURCES 

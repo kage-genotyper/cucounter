@@ -18,23 +18,28 @@ PYBIND11_MODULE(cucounter_C, m) {
       const bool cuda_keys = false;
       return new HashTable(data, cuda_keys, size, capacity);
     }))
+
     .def(py::init([](long keys_ptr, const uint32_t size, const uint32_t capacity) { 
       const uint64_t *data = reinterpret_cast<uint64_t*>(keys_ptr);
       const bool cuda_keys = true;
       return new HashTable(data, cuda_keys, size, capacity);
     }))
+
     .def("size", &HashTable::size)
     .def("capacity", &HashTable::capacity)
     .def("__repr__", &HashTable::to_string)
-    .def("count", [](HashTable &self, py::array_t<uint64_t> &keys) {
+
+    .def("count", [](HashTable &self, py::array_t<uint64_t> &keys, const bool count_revcomps, const uint8_t kmer_size) {
       const uint64_t *data = (uint64_t *)keys.data();
       const uint32_t size = keys.size();
-      self.count(data, size);
+      self.count(data, size, count_revcomps, kmer_size);
     })
-    .def("count", [](HashTable &self, long data_ptr, uint32_t size) {
+
+    .def("count", [](HashTable &self, long data_ptr, uint32_t size, const bool count_revcomps, const uint8_t kmer_size) {
       uint64_t *data = reinterpret_cast<uint64_t*>(data_ptr);
-      self.countcu(data, size);
+      self.countcu(data, size, count_revcomps, kmer_size);
     })
+
     .def("get", [](HashTable &self, py::array_t<uint64_t> &keys) {
       py::buffer_info buf = keys.request();
 
@@ -48,6 +53,7 @@ PYBIND11_MODULE(cucounter_C, m) {
 
       return ret;
     })
+
     .def("get", [](HashTable &self, long keys_ptr, long counts_ptr, uint32_t size) {
       uint64_t *keys = reinterpret_cast<uint64_t*>(keys_ptr);
       uint32_t *counts = reinterpret_cast<uint32_t*>(counts_ptr);
