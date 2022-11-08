@@ -49,7 +49,7 @@ void init_hashtable(
 
   int grid_size = size / thread_block_size + (size % thread_block_size > 0);
   init_hashtable_kernel<<<grid_size, thread_block_size>>>(table, keys, size, capacity);
-  cuda_errchk(cudaDeviceSynchronize());
+  //cuda_errchk(cudaDeviceSynchronize());
 }
 
 __global__ void lookup_hashtable_kernel(Table table, 
@@ -81,7 +81,7 @@ void lookup_hashtable(Table table,
 
   int grid_size = size / thread_block_size + (size % thread_block_size > 0);
   lookup_hashtable_kernel<<<grid_size, thread_block_size>>>(table, keys, counts, size, capacity);
-  cuda_errchk(cudaDeviceSynchronize());
+  //cuda_errchk(cudaDeviceSynchronize());
 }
 
 __global__ void count_hashtable_kernel(
@@ -101,27 +101,26 @@ __global__ void count_hashtable_kernel(
       }
       if (cur_key == key) {
         atomicAdd((unsigned int *)&(table.values[hash]), 1);
-        return;
+        //return;
+        break;
       }
       hash = (hash + 1) % capacity;
     }
 
-    if (count_revcomps) {
-      // Search for reverse complement of key
-      key = word_reverse_complement(key, kmer_size);
-      hash = key % capacity;
+    // Search for reverse complement of key
+    key = word_reverse_complement(key, kmer_size);
+    hash = key % capacity;
 
-      while (true) {
-        uint64_t cur_key = table.keys[hash];
-        if (cur_key == kEmpty) { 
-          return;
-        }
-        if (cur_key == key) {
-          atomicAdd((unsigned int *)&(table.values[hash]), 1);
-          return;
-        }
-        hash = (hash + 1) % capacity;
+    while (true) {
+      uint64_t cur_key = table.keys[hash];
+      if (cur_key == kEmpty) { 
+        return;
       }
+      if (cur_key == key) {
+        atomicAdd((unsigned int *)&(table.values[hash]), 1);
+        return;
+      }
+      hash = (hash + 1) % capacity;
     }
   }
 }
@@ -138,7 +137,7 @@ void count_hashtable(
   int grid_size = size / thread_block_size + (size % thread_block_size > 0);
   count_hashtable_kernel<<<grid_size, thread_block_size>>>(
       table, keys, size, capacity, count_revcomps, kmer_size);
-  cuda_errchk(cudaDeviceSynchronize());
+  //cuda_errchk(cudaDeviceSynchronize());
 }
 
 } // kernels
