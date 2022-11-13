@@ -6,11 +6,13 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#define CG_SIZE 4
 #define _ERR_CHECK 
 
 static const uint64_t kEmpty = 0xffffffffffffffff;
 
 #define cuda_errchk(err) { cuda_errcheck(err, __FILE__, __LINE__); }
+
 inline void cuda_errcheck(cudaError_t code, const char *file, int line, bool abort=true) 
 {
 #ifdef _ERR_CHECK

@@ -2,11 +2,14 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <cooperative_groups.h>
 
 #include "common.h"
 #include "kernels.h"
 
 namespace kernels {
+
+namespace cg = cooperative_groups;
 
 __device__ inline uint64_t word_reverse_complement(const uint64_t kmer, uint8_t kmer_size) 
 {
@@ -47,7 +50,7 @@ void init_hashtable(
     Table table, const uint64_t *keys, const uint32_t size, const uint32_t capacity) 
 {
   //int min_grid_size;
-  int thread_block_size = 512;
+  int thread_block_size = 1024;
   //cuda_errchk(cudaOccupancyMaxPotentialBlockSize(
   //    &min_grid_size, &thread_block_size, 
   //    init_hashtable_kernel, 0, 0));
@@ -84,7 +87,7 @@ void lookup_hashtable(Table table,
     const uint64_t *keys, uint32_t *counts, const uint32_t size, const uint32_t capacity) 
 {
   //int min_grid_size;
-  int thread_block_size = 512;
+  int thread_block_size = 1024;
   //cuda_errchk(cudaOccupancyMaxPotentialBlockSize(
   //    &min_grid_size, &thread_block_size, 
   //    init_hashtable_kernel, 0, 0));
@@ -150,12 +153,73 @@ void count_hashtable(
     const bool count_revcomps, const uint8_t kmer_size) 
 {
   //int min_grid_size;
-  int thread_block_size = 512;
+  int thread_block_size = 1024;
   //cuda_errchk(cudaOccupancyMaxPotentialBlockSize(
   //    &min_grid_size, &thread_block_size, 
   //    init_hashtable_kernel, 0, 0));
 
   int grid_size = size / thread_block_size + (size % thread_block_size > 0);
+  count_hashtable_kernel<<<grid_size, thread_block_size>>>(
+      table, keys, size, capacity, count_revcomps, kmer_size);
+  //cuda_errchk(cudaDeviceSynchronize());
+}
+
+__global__ void cg_count_hashtable_kernel( 
+    Table table, const uint64_t *keys, const uint32_t size, const uint32_t capacity,
+    const bool count_revcomps, const uint8_t kmer_size) 
+{
+  int key_index = (blockIdx.x * blockDim.x + threadIdx.x) / CG_SIZE;
+
+  if (key_index >= size) 
+  {
+    return;
+  }
+
+  cg::thread_block_tile<CG_SIZE> group = cg::tiled_partition<CG_SIZE>(cg::this_thread_block());
+  uint64_t insert_key = keys[key_index];
+
+  uint64_t hash = insert_key % capacity;
+  hash = (hash + group.thread_rank()) % capacity;
+
+  while (true) 
+  {
+    uint64_t table_key = table.keys[hash];
+
+    const bool hit = (insert_key == table_key);
+    const auto hit_mask = group.ballot(hit);
+
+    if (hit_mask)
+    {
+      const int leader = __ffs(hit_mask) - 1;
+      if (group.thread_rank() == leader)
+      {
+        atomicAdd((unsigned int *)&(table.values[hash]), 1);
+      }
+      return;
+    }
+
+    const bool empty = (table_key == kEmpty);
+    const auto empty_mask = group.ballot(empty);
+
+    if (empty_mask) {
+      return;
+    }
+
+    hash = (hash + CG_SIZE) % capacity;
+  }
+}
+
+void cg_count_hashtable(
+    Table table, const uint64_t *keys, const uint32_t size, const uint32_t capacity,
+    const bool count_revcomps, const uint8_t kmer_size) 
+{
+  //int min_grid_size;
+  int thread_block_size = 1024;
+  //cuda_errchk(cudaOccupancyMaxPotentialBlockSize(
+  //    &min_grid_size, &thread_block_size, 
+  //    init_hashtable_kernel, 0, 0));
+
+  int grid_size = (size*CG_SIZE) / thread_block_size + ((size*CG_SIZE) % thread_block_size > 0);
   count_hashtable_kernel<<<grid_size, thread_block_size>>>(
       table, keys, size, capacity, count_revcomps, kmer_size);
   //cuda_errchk(cudaDeviceSynchronize());
