@@ -11,12 +11,14 @@
 #include "common.h"
 #include "kernels.h"
 
-class HashTable {
+class HashTable
+{
 public:
   HashTable() = default;
   HashTable(const uint64_t *keys, const bool cuda_keys, 
       const uint32_t size, const uint32_t capacity);
-  ~HashTable() { 
+  ~HashTable() 
+  { 
     cudaFree(table_m.keys); 
     cudaFree(table_m.values); 
   }
