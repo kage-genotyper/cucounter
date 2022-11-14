@@ -36,10 +36,15 @@ jobs:
           pip install cupy-cuda11x
           pip install pytest
 
+      - name: Check pytest (1)
+        run: pytest --version
+
+      - name: Check pytest (1)
+        run: which pytest
+
       - name: Install cucounter
         run: pip install .
 
       - name: Run tests
-        run: |
-          ./run_tests
+        run: python -m pytest
         
