@@ -3,7 +3,6 @@
 
 #include <inttypes.h>
 
-#include <cuda.h>
 #include <cuda_runtime.h>
 #include <cooperative_groups.h>
 
