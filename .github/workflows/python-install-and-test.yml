@@ -19,7 +19,7 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
-      - run: nvcc -v
+      - run: nvcc -V
 
       - name: Checkout code
         uses: actions/checkout@v3
