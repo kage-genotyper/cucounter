@@ -19,7 +19,6 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
-      - run: echo "Installed CUDA version is: ${{ steps.cuda-toolkit.outputs.cuda }}"
       - run: nvcc -v
 
       - name: Checkout code
