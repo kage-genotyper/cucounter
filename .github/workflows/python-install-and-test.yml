@@ -21,7 +21,7 @@ jobs:
           cuda: '11.7.0'
 
       - name: Print CUDA info
-        run: nvcc -V
+        #run: nvcc -V
         run: |
           ls $CUDA_PATH
           ls $CUDA_PATH/bin
