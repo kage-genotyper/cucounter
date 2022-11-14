@@ -4,7 +4,7 @@ import numpy as np
 #from cucounter import Counter
 
 def test_test():
-    assert True
+    assert np.all(np.zeros(10) == np.zeros(10))
 
 """
 def test_counter_with_numpy():
