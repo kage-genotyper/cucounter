@@ -17,4 +17,3 @@ set(SOURCES
 )
 
 pybind11_add_module(${PROJECT_NAME} ${SOURCES} "${SOURCE_DIR}/bindings.cpp")
-include_directories(${CUDA_PATH})

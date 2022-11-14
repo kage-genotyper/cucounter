@@ -22,7 +22,7 @@ jobs:
 
       - name: Prepare CUDA Toolkit
         run: |
-          export PATH=$PATH:$CUDA_PATH
+          export PATH=$PATH:$CUDA_PATH/bin
 
       - name: Check CUDA version
         run: nvcc -V
