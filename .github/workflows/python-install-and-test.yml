@@ -20,18 +20,6 @@ jobs:
         with:
           cuda: '11.7.0'
 
-      - name: Print CUDA info (1)
-        run: echo "CUDA_PATH = $CUDA_PATH"
-
-      - name: Print CUDA info (2)
-        run: echo "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
-
-      - name: Print CUDA info (3)
-        run: echo "PATH = $PATH"
-
-      - name: Print CUDA info (4)
-        run: echo "CPATH = $CPATH"
-
       - name: Check CUDA version
         run: nvcc -V
 
@@ -40,6 +28,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python3 -m venv venv
+          source venv/bin/activate
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
