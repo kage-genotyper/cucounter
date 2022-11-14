@@ -30,6 +30,8 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "${{ matrix.python-version }}"
+    - name: Locate libcuda.so.1
+      run: locate libcuda.so.1
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
