@@ -20,12 +20,12 @@ jobs:
         with:
           cuda: '11.7.0'
 
-      - name: Print CUDA info
-        #run: nvcc -V
+      - name: Prepare CUDA Toolkit
         run: |
-          ls $CUDA_PATH
-          ls $CUDA_PATH/bin
-          ls $CUDA_PATH/include
+          export PATH=$PATH:$CUDA_PATH
+
+      - name: Check CUDA version
+        run: nvcc -V
 
       - name: Checkout code
         uses: actions/checkout@v3
