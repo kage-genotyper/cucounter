@@ -14,5 +14,15 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Hello world"
-      - run: echo "Job completed"
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install .
+      - name: Run pytest
+        run: |
+          ./run_tests
+        
