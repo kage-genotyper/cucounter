@@ -19,9 +19,7 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
-      
-      - name: Check CUDA Toolkit
-      - run: nvcc -V
+        run: nvcc -V
         run: |
           ls $CUDA_PATH
           ls $CUDA_PATH/bin
