@@ -20,6 +20,8 @@ jobs:
         with:
           cuda: '11.7.0'
         run: nvcc -V
+
+      - name: Print CUDA environment variables
         run: |
           ls $CUDA_PATH
           ls $CUDA_PATH/bin
