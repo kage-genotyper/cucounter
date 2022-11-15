@@ -1,13 +1,10 @@
 import numpy as np
-import cupy as cp
+#import cupy as cp
 
 #from cucounter import Counter
 
 def test_test():
     assert np.all(np.zeros(10) == np.zeros(10))
-
-def test_test2():
-    assert cp.all(cp.zeros(10) == cp.zeros(10))
 
 """
 def test_counter_with_numpy():
