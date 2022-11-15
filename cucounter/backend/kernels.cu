@@ -22,15 +22,14 @@ __device__ __forceinline__ static uint64_t word_reverse_complement(
   return (res >> (2 * (32 - kmer_size)));
 }
 
-__device__ __forceinline__ static uint64_t murmur_hash(const uint64_t kmer) 
+__device__ __forceinline__ static uint64_t murmur_hash(uint64_t kmer) 
 {
-  uint64_t res = kmer;
-  res ^= res >> 33;
-  res *= 0xff51afd7ed558ccd;
-  res ^= res >> 33;
-  res *= 0xc4ceb9fe1a85ec53;
-  res ^= res >> 33;
-  return res;
+  kmer ^= kmer >> 33;
+  kmer *= 0xff51afd7ed558ccd;
+  kmer ^= kmer >> 33;
+  kmer *= 0xc4ceb9fe1a85ec53;
+  kmer ^= kmer >> 33;
+  return kmer;
 }
 
 __global__ void init_hashtable_kernel(
