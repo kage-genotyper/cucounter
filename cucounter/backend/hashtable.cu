@@ -47,20 +47,19 @@ void HashTable::initialize(const uint64_t *keys, const bool cuda_keys,
 void HashTable::get(const uint64_t *keys, uint32_t *counts, uint32_t size) const 
 {
   uint64_t *d_keys;
+  uint32_t *d_counts;
   cuda_errchk(cudaMalloc(&d_keys, sizeof(uint64_t)*size));
+  cuda_errchk(cudaMalloc(&d_counts, sizeof(uint32_t)*size));
   cuda_errchk(cudaMemcpy(d_keys, keys, sizeof(uint64_t)*size, cudaMemcpyHostToDevice));
 
-  uint32_t *d_counts;
-  cuda_errchk(cudaMalloc(&d_counts, sizeof(uint32_t)*size));
-
   kernels::lookup_hashtable(table_m, d_keys, d_counts, size, capacity_m); 
-
   cuda_errchk(cudaMemcpy(counts, d_counts, sizeof(uint32_t)*size, cudaMemcpyDeviceToHost));
+
   cuda_errchk(cudaFree(d_keys));
   cuda_errchk(cudaFree(d_counts));
 }
 
-void HashTable::getcu(const uint64_t *keys, uint32_t *counts, uint32_t size) const 
+void HashTable::cu_get(const uint64_t *keys, uint32_t *counts, uint32_t size) const 
 {
   kernels::lookup_hashtable(table_m, keys, counts, size, capacity_m); 
 }
@@ -77,11 +76,33 @@ void HashTable::count(const uint64_t *keys, const uint32_t size,
   cuda_errchk(cudaFree(d_keys));
 }
 
-void HashTable::countcu(const uint64_t *keys, const uint32_t size,
+void HashTable::cu_count(const uint64_t *keys, const uint32_t size,
     const bool count_revcomps, const uint8_t kmer_size) 
 {
   kernels::count_hashtable(table_m, keys, size, capacity_m, count_revcomps, kmer_size);
   //kernels::cg_count_hashtable(table_m, keys, size, capacity_m, count_revcomps, kmer_size);
+}
+
+void HashTable::get_probe_lengths(
+    const uint64_t *keys, uint32_t *lengths, const uint32_t size) const 
+{
+  uint64_t *d_keys;
+  uint32_t *d_lengths;
+  cuda_errchk(cudaMalloc(&d_keys, sizeof(uint64_t)*size));
+  cuda_errchk(cudaMalloc(&d_lengths, sizeof(uint32_t)*size));
+  cuda_errchk(cudaMemcpy(d_keys, keys, sizeof(uint64_t)*size, cudaMemcpyHostToDevice));
+
+  kernels::get_probe_lengths(table_m, d_keys, d_lengths, size, capacity_m);
+  cuda_errchk(cudaMemcpy(lengths, d_lengths, sizeof(uint32_t)*size, cudaMemcpyDeviceToHost));
+
+  cuda_errchk(cudaFree(d_keys));
+  cuda_errchk(cudaFree(d_lengths));
+}
+
+void HashTable::cu_get_probe_lengths(
+    const uint64_t *keys, uint32_t *lengths, const uint32_t size) const
+{
+  kernels::get_probe_lengths(table_m, keys, lengths, size, capacity_m);
 }
 
 std::string HashTable::to_string() const 
@@ -90,8 +111,10 @@ std::string HashTable::to_string() const
 
   uint64_t *keys = new uint64_t[capacity_m];
   uint32_t *values = new uint32_t[capacity_m];
-  cuda_errchk(cudaMemcpy(keys, table_m.keys, sizeof(uint64_t)*capacity_m, cudaMemcpyDeviceToHost));
-  cuda_errchk(cudaMemcpy(values, table_m.values, sizeof(uint32_t)*capacity_m, cudaMemcpyDeviceToHost));
+  cuda_errchk(cudaMemcpy(
+        keys, table_m.keys, sizeof(uint64_t)*capacity_m, cudaMemcpyDeviceToHost));
+  cuda_errchk(cudaMemcpy(
+        values, table_m.values, sizeof(uint32_t)*capacity_m, cudaMemcpyDeviceToHost));
 
   std::ostringstream oss;
   std::ostringstream keys_oss;

@@ -5,7 +5,7 @@
 
 #include <cuda_runtime.h>
 
-#define CG_SIZE 1
+#define CG_SIZE 4
 #define _ERR_CHECK 
 
 static const uint64_t kEmpty = 0xffffffffffffffff;

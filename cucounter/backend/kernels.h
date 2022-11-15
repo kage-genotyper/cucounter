@@ -24,6 +24,9 @@ void cg_count_hashtable(
 void lookup_hashtable(Table table, const uint64_t *keys, uint32_t *counts, 
     const uint32_t size, const uint32_t capacity); 
 
+void get_probe_lengths(const Table table, const uint64_t *keys, uint32_t *lengths,
+    const uint32_t size, const uint32_t capacity);
+
 } // kernels
 
 #endif // KERNELS_H_
