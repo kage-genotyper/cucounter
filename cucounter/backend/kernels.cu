@@ -24,11 +24,13 @@ __device__ __forceinline__ static uint64_t word_reverse_complement(
 
 __device__ __forceinline__ static uint64_t murmur_hash(uint64_t kmer) 
 {
+#ifdef _USE_MURMUR_HASH
   kmer ^= kmer >> 33;
   kmer *= 0xff51afd7ed558ccd;
   kmer ^= kmer >> 33;
   kmer *= 0xc4ceb9fe1a85ec53;
   kmer ^= kmer >> 33;
+#endif
   return kmer;
 }
 

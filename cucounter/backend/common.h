@@ -5,8 +5,8 @@
 
 #include <cuda_runtime.h>
 
-#ifdef _CG_SIZE
-static const unsigned int cg_size = _CG_SIZE;
+#ifdef _COOPERATIVE_GROUP_SIZE
+static const unsigned int cg_size = _COOPERATIVE_GROUP_SIZE;
 #else
 static const unsigned int cg_size = 4;
 #endif
@@ -17,7 +17,7 @@ static const uint64_t kEmpty = 0xffffffffffffffff;
 
 inline void cuda_errcheck(cudaError_t code, const char *file, int line, bool abort=true) 
 {
-#ifdef _ERRCHK
+#ifdef _CUDA_ERROR_CHECK
   if (code != cudaSuccess) 
   {
     switch (code) 
@@ -30,7 +30,7 @@ inline void cuda_errcheck(cudaError_t code, const char *file, int line, bool abo
     }
     exit(code);
   }
-#endif // _ERRCHK
+#endif // _CUDA_ERROR_CHECK
 }
 
 struct Table 

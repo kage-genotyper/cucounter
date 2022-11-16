@@ -11,6 +11,7 @@ from setuptools.command.build_ext import build_ext
 CUDA_ERROR_CHECK = True
 USE_COOPERATIVE_GROUPS = False
 COOPERATIVE_GROUP_SIZE = 0
+USE_MURMUR_HASH = True
 
 
 class CMakeExtension(Extension):
@@ -60,10 +61,12 @@ class CMakeBuild(build_ext):
         global CUDA_ERROR_CHECK 
         global USE_COOPERATIVE_GROUPS 
         global COOPERATIVE_GROUP_SIZE
-        cmake_args += ["-DCUDA_ERRCHK=" + str(CUDA_ERROR_CHECK)]
-        cmake_args += ["-DUSE_CG=" + str(USE_COOPERATIVE_GROUPS)]
+        global USE_MURMUR_HASH
+        cmake_args += ["-DCUDA_ERROR_CHECK=" + str(CUDA_ERROR_CHECK)]
+        cmake_args += ["-DUSE_COOPERATIVE_GROUPS=" + str(USE_COOPERATIVE_GROUPS)]
         if COOPERATIVE_GROUP_SIZE in [1, 2, 4, 8, 16, 32]:
-            cmake_args += ["-DCG_SIZE=" + str(COOPERATIVE_GROUP_SIZE)]
+            cmake_args += ["-DCOOPERATIVE_GROUP_SIZE=" + str(COOPERATIVE_GROUP_SIZE)]
+        cmake_args += ["-DUSE_MURMUR_HASH=" + str(USE_MURMUR_HASH)]
 
         env = os.environ.copy()
         env["CXXFLAGS"] = "{} -DVERSION_INFO=\\'{}\\'".format(
