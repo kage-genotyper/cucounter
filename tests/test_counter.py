@@ -11,7 +11,7 @@ def test_counter_with_numpy():
     counter.count(kmers)
     counts = counter[keys]
 
-    assert np.all(counts == np.array([4, 2, 2, 1, 1, 2], dtype=np.uint64))
+    assert np.all(counts == np.array([4, 2, 2, 1, 1, 2], dtype=np.uint32))
 
 def test_counter_with_cupy():
     keys = cp.array([0, 1, 2, 5, 10, 42], dtype=cp.uint64)
@@ -21,4 +21,14 @@ def test_counter_with_cupy():
     counter.count(kmers)
     counts = counter[keys]
 
-    assert cp.all(counts == cp.array([4, 2, 2, 1, 1, 2], dtype=cp.uint64))
+    assert cp.all(counts == cp.array([4, 2, 2, 1, 1, 2], dtype=cp.uint32))
+
+def test_revcomps_with_numpy():
+    keys = cp.array([0, 0x3FFFFFFFFFFFFFFF], dtype=cp.uint64)
+    kmers = cp.array([0, 0x3FFFFFFFFFFFFFFF], dtype=cp.uint64)
+
+    counter = Counter(keys=keys)
+    counter.count(kmers, count_revcomps=True, kmer_size=31)
+    counts = counter[keys]
+
+    assert cp.all(counts == cp.array([2, 2], dtype=cp.uint32))
