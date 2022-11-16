@@ -8,6 +8,11 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 
 
+CUDA_ERROR_CHECK = True
+USE_COOPERATIVE_GROUPS = False
+COOPERATIVE_GROUP_SIZE = 0
+
+
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=""):
         Extension.__init__(self, name, sources=[])
@@ -52,7 +57,13 @@ class CMakeBuild(build_ext):
             cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg]
             build_args += ["--", "-j2"]
 
-        cmake_args += ["-DCUDA_INCLUDE_DIRS=" + "$CUDA_PATH"]
+        global CUDA_ERROR_CHECK 
+        global USE_COOPERATIVE_GROUPS 
+        global COOPERATIVE_GROUP_SIZE
+        cmake_args += ["-DCUDA_ERRCHK=" + str(CUDA_ERROR_CHECK)]
+        cmake_args += ["-DUSE_CG=" + str(USE_COOPERATIVE_GROUPS)]
+        if COOPERATIVE_GROUP_SIZE in [1, 2, 4, 8, 16, 32]:
+            cmake_args += ["-DCG_SIZE=" + str(COOPERATIVE_GROUP_SIZE)]
 
         env = os.environ.copy()
         env["CXXFLAGS"] = "{} -DVERSION_INFO=\\'{}\\'".format(

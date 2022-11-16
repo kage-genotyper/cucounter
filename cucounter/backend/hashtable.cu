@@ -1,3 +1,4 @@
+#include <iostream>
 #include <sstream>
 #include <inttypes.h>
 #include <string>
@@ -71,16 +72,23 @@ void HashTable::count(const uint64_t *keys, const uint32_t size,
   cuda_errchk(cudaMalloc(&d_keys, sizeof(uint64_t)*size));
   cuda_errchk(cudaMemcpy(d_keys, keys, sizeof(uint64_t)*size, cudaMemcpyHostToDevice));
 
+#ifdef _USE_CG
+  kernels::cg_count_hashtable(table_m, d_keys, size, capacity_m, count_revcomps, kmer_size);
+#else
   kernels::count_hashtable(table_m, d_keys, size, capacity_m, count_revcomps, kmer_size);
-  //kernels::cg_count_hashtable(table_m, d_keys, size, capacity_m, count_revcomps, kmer_size);
+#endif
+
   cuda_errchk(cudaFree(d_keys));
 }
 
 void HashTable::cu_count(const uint64_t *keys, const uint32_t size,
     const bool count_revcomps, const uint8_t kmer_size) 
 {
+#ifdef _USE_CG
+  kernels::cg_count_hashtable(table_m, keys, size, capacity_m, count_revcomps, kmer_size);
+#else
   kernels::count_hashtable(table_m, keys, size, capacity_m, count_revcomps, kmer_size);
-  //kernels::cg_count_hashtable(table_m, keys, size, capacity_m, count_revcomps, kmer_size);
+#endif
 }
 
 void HashTable::get_probe_lengths(
