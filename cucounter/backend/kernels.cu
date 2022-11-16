@@ -179,13 +179,13 @@ __global__ void cg_count_hashtable_kernel(Table table,
     const uint64_t *keys, const uint32_t size, const uint32_t capacity,
     const bool count_revcomps, const uint8_t kmer_size) 
 {
-  int key_index = (blockIdx.x * blockDim.x + threadIdx.x) / CG_SIZE;
+  int key_index = (blockIdx.x * blockDim.x + threadIdx.x) / cg_size;
   if (key_index >= size) 
   {
     return;
   }
 
-  cg::thread_block_tile<CG_SIZE> group = cg::tiled_partition<CG_SIZE>(cg::this_thread_block());
+  cg::thread_block_tile<cg_size> group = cg::tiled_partition<cg_size>(cg::this_thread_block());
   uint64_t insert_key = keys[key_index];
   uint64_t hash = murmur_hash(insert_key) % capacity;
   hash = (hash + group.thread_rank()) % capacity;
@@ -212,7 +212,7 @@ __global__ void cg_count_hashtable_kernel(Table table,
       return;
     }
 
-    hash = (hash + CG_SIZE) % capacity;
+    hash = (hash + cg_size) % capacity;
   }
 }
 
@@ -226,7 +226,7 @@ void cg_count_hashtable(Table table,
       &min_grid_size, &thread_block_size, 
       cg_count_hashtable_kernel, 0, 0));
 
-  int grid_size = (size*CG_SIZE) / thread_block_size + ((size*CG_SIZE) % thread_block_size > 0);
+  int grid_size = (size*cg_size) / thread_block_size + ((size*cg_size) % thread_block_size > 0);
   count_hashtable_kernel<<<grid_size, thread_block_size>>>(
       table, keys, size, capacity, count_revcomps, kmer_size);
 }

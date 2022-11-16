@@ -3,7 +3,6 @@ project(cucounter_C LANGUAGES CXX CUDA)
 
 find_package(pybind11 REQUIRED)
 find_package(CUDA REQUIRED)
-#include_directories(${CUDA_INCLUDE_DIRS})
 
 set(CMAKE_CUDA_ARCHITECTURES "75")
 set(CMAKE_CXX_FLAGS "-O3")
@@ -16,5 +15,16 @@ set(SOURCES
   "${SOURCE_DIR}/kernels.cu"
   "${SOURCE_DIR}/hashtable.cu"
 )
+
+if(${CUDA_ERRCHK} MATCHES "True")
+  add_compile_definitions(_ERRCHK)
+endif()
+if(${USE_CG} MATCHES "True")
+  add_compile_definitions(_USE_CG)
+endif()
+if(DEFINED CG_SIZE)
+  add_compile_definitions(_TEST)
+  add_compile_definitions(_CG_SIZE=${CG_SIZE})
+endif()
 
 pybind11_add_module(${PROJECT_NAME} ${SOURCES} "${SOURCE_DIR}/bindings.cpp")
