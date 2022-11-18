@@ -10,23 +10,6 @@
 #include "common.h"
 #include "kernels.h"
 
-class SOA
-{
-public:
-  SOA() = default;
-  SOA(const uint32_t capacity);
-  ~SOA()
-  {
-    cuda_errchk(cudaFree(keys_m));
-    cuda_errchk(cudaFree(values_m));
-  }
-  uint64_t *keys() const { return keys_m; } 
-  uint32_t *values() const { return values_m; } 
-private:
-  uint64_t *keys_m;
-  uint32_t *values_m;
-};
-
 class HashTable
 {
 public:
