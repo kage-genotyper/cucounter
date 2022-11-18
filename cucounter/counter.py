@@ -89,3 +89,9 @@ class Counter(HashTable):
             probe_lengths = cp.zeros_like(keys, dtype=np.uint32)
             super.get_probe_lengths(keys.data.ptr, probe_lengths.data.ptr, keys.size)
             return probe_lengths
+
+    def __repr__(self):
+        return super().to_string(True)
+
+    def __str__(self):
+        return super().to_string(False)

@@ -10,7 +10,10 @@
 
 namespace kernels {
 
-void init_hashtable(
+void initialize_hashtable(
+    Table table, const uint64_t *keys, const uint32_t size, const uint32_t capacity);
+
+void cg_initialize_hashtable(
     Table table, const uint64_t *keys, const uint32_t size, const uint32_t capacity);
 
 void count_hashtable(
@@ -22,6 +25,9 @@ void cg_count_hashtable(
     const bool count_revcomps, const uint8_t kmer_size);
 
 void lookup_hashtable(Table table, const uint64_t *keys, uint32_t *counts, 
+    const uint32_t size, const uint32_t capacity); 
+
+void cg_lookup_hashtable(Table table, const uint64_t *keys, uint32_t *counts, 
     const uint32_t size, const uint32_t capacity); 
 
 void get_probe_lengths(const Table table, const uint64_t *keys, uint32_t *lengths,
