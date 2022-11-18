@@ -9,9 +9,10 @@ from setuptools.command.build_ext import build_ext
 
 
 CUDA_ERROR_CHECK = True
-USE_COOPERATIVE_GROUPS = False
-COOPERATIVE_GROUP_SIZE = 0
+USE_COOPERATIVE_GROUPS = True
+COOPERATIVE_GROUP_SIZE = 4
 USE_MURMUR_HASH = True
+USE_AOS = True
 
 
 class CMakeExtension(Extension):

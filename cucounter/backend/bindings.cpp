@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <string>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -28,7 +29,10 @@ PYBIND11_MODULE(cucounter_C, m)
     }))
     .def("size", &HashTable::size)
     .def("capacity", &HashTable::capacity)
-    .def("__repr__", &HashTable::to_string)
+    .def("to_string", [](HashTable &self, const bool full)
+    {
+      return self.to_string(full);
+    })
     .def("count", [](HashTable &self, py::array_t<uint64_t> &keys, const bool count_revcomps, const uint8_t kmer_size) 
     {
       const uint64_t *data = (uint64_t *)keys.data();

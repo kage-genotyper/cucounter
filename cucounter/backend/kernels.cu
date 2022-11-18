@@ -34,7 +34,9 @@ __device__ __forceinline__ static uint64_t murmur_hash(uint64_t kmer)
   return kmer;
 }
 
-__global__ void init_hashtable_kernel(Table table, 
+// ----- INITIALIZE -----
+
+__global__ void initialize_hashtable_kernel(Table table, 
     const uint64_t *keys, const uint32_t size, const uint32_t capacity) 
 {
   int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
@@ -48,30 +50,94 @@ __global__ void init_hashtable_kernel(Table table,
 
   while (true) 
   {
-    unsigned long long int *old_ptr = reinterpret_cast<unsigned long long int *>(&table.keys[hash]);
-    uint64_t old = atomicCAS(old_ptr, kEmpty, insert_key);
+    unsigned long long int *table_key_ptr = 
+      reinterpret_cast<unsigned long long int *>(&table.keys[hash]);
+    uint64_t old = atomicCAS(table_key_ptr, kEmpty, insert_key);
 
-    if (old == kEmpty || old == insert_key) 
+    const bool inserted = (old == kEmpty || old == insert_key);
+
+    if (inserted)
     {
-      table.values[hash] = 0;
       return;
     }
     hash = (hash + 1) % capacity;
   }
 }
 
-void init_hashtable(Table table, 
+void initialize_hashtable(Table table, 
     const uint64_t *keys, const uint32_t size, const uint32_t capacity) 
 {
   int min_grid_size;
   int thread_block_size;
   cuda_errchk(cudaOccupancyMaxPotentialBlockSize(
       &min_grid_size, &thread_block_size, 
-      init_hashtable_kernel, 0, 0));
+      initialize_hashtable_kernel, 0, 0));
 
   int grid_size = size / thread_block_size + (size % thread_block_size > 0);
-  init_hashtable_kernel<<<grid_size, thread_block_size>>>(table, keys, size, capacity);
+  initialize_hashtable_kernel<<<grid_size, thread_block_size>>>(table, keys, size, capacity);
 }
+
+__global__ void cg_initialize_hashtable_kernel(Table table, 
+    const uint64_t *keys, const uint32_t size, const uint32_t capacity) 
+{
+  int key_index = (blockIdx.x * blockDim.x + threadIdx.x) / cg_size;
+  if (key_index >= size) 
+  {
+    return;
+  }
+
+  cg::thread_block_tile<cg_size> group = cg::tiled_partition<cg_size>(cg::this_thread_block());
+  uint64_t insert_key = keys[key_index];
+  uint64_t hash = murmur_hash(insert_key) % capacity;
+  hash = (hash + group.thread_rank()) % capacity;
+
+  while (true) 
+  {
+    uint64_t table_key = table.keys[hash];
+
+    bool empty = (table_key == kEmpty);
+    auto empty_mask = group.ballot(empty);
+    while (empty_mask)
+    {
+      bool inserted = false;
+
+      // Determine leader
+      const int leader = __ffs(empty_mask) - 1;
+      if (group.thread_rank() == leader)
+      {
+        unsigned long long int *table_key_ptr = 
+          reinterpret_cast<unsigned long long int *>(&table.keys[hash]);
+        const uint64_t old = atomicCAS(table_key_ptr, kEmpty, insert_key);
+
+        inserted = (old == kEmpty || old == insert_key);
+      }
+
+      if (group.any(inserted))
+      {
+        return;
+      }
+
+      empty_mask ^= (1UL << leader);
+    }
+
+    hash = (hash + cg_size) % capacity;
+  }
+}
+
+void cg_initialize_hashtable(Table table, 
+    const uint64_t *keys, const uint32_t size, const uint32_t capacity) 
+{
+  int min_grid_size;
+  int thread_block_size;
+  cuda_errchk(cudaOccupancyMaxPotentialBlockSize(
+      &min_grid_size, &thread_block_size, 
+      cg_initialize_hashtable_kernel, 0, 0));
+
+  int grid_size = (size*cg_size) / thread_block_size + ((size*cg_size) % thread_block_size > 0);
+  cg_initialize_hashtable_kernel<<<grid_size, thread_block_size>>>(table, keys, size, capacity);
+}
+
+// ----- LOOKUP -----
 
 __global__ void lookup_hashtable_kernel(const Table table, 
     const uint64_t *keys, uint32_t *counts, const uint32_t size, const uint32_t capacity) 
@@ -109,6 +175,62 @@ void lookup_hashtable(const Table table,
   int grid_size = size / thread_block_size + (size % thread_block_size > 0);
   lookup_hashtable_kernel<<<grid_size, thread_block_size>>>(table, keys, counts, size, capacity);
 }
+
+__global__ void cg_lookup_hashtable_kernel(const Table table, 
+    const uint64_t *keys, uint32_t *counts, const uint32_t size, const uint32_t capacity)
+{
+  int key_index = (blockIdx.x * blockDim.x + threadIdx.x) / cg_size;
+  if (key_index >= size) 
+  {
+    return;
+  }
+
+  cg::thread_block_tile<cg_size> group = cg::tiled_partition<cg_size>(cg::this_thread_block());
+  uint64_t lookup_key = keys[key_index];
+  uint64_t hash = murmur_hash(lookup_key) % capacity;
+  hash = (hash + group.thread_rank()) % capacity;
+
+  while (true) 
+  {
+    uint64_t table_key = table.keys[hash];
+
+    const bool hit = (lookup_key == table_key);
+    const auto hit_mask = group.ballot(hit);
+    if (hit_mask)
+    {
+      const int leader = __ffs(hit_mask) - 1;
+      if (group.thread_rank() == leader)
+      {
+        counts[key_index] = table.values[hash];
+      }
+      return;
+    }
+
+    const bool empty = (table_key == kEmpty);
+    const auto empty_mask = group.ballot(empty);
+    if (empty_mask) {
+      return;
+    }
+
+    hash = (hash + cg_size) % capacity;
+  }
+}
+
+void cg_lookup_hashtable(const Table table, 
+    const uint64_t *keys, uint32_t *counts, const uint32_t size, const uint32_t capacity)
+{
+  int min_grid_size;
+  int thread_block_size;
+  cuda_errchk(cudaOccupancyMaxPotentialBlockSize(
+      &min_grid_size, &thread_block_size, 
+      cg_lookup_hashtable_kernel, 0, 0));
+
+  int grid_size = (size*cg_size) / thread_block_size + ((size*cg_size) % thread_block_size > 0);
+  lookup_hashtable_kernel<<<grid_size, thread_block_size>>>(
+      table, keys, counts, size, capacity);
+}
+
+// ----- COUNT -----
 
 __global__ void count_hashtable_kernel(Table table, 
     const uint64_t *keys, const uint32_t size, const uint32_t capacity,
@@ -232,6 +354,8 @@ void cg_count_hashtable(Table table,
   count_hashtable_kernel<<<grid_size, thread_block_size>>>(
       table, keys, size, capacity, count_revcomps, kmer_size);
 }
+
+// ----- PROBE LENGHT -----
 
 __global__ void get_probe_lengths_kernel(const Table table, 
     const uint64_t *keys, uint32_t *lengths, 

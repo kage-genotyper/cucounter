@@ -28,5 +28,8 @@ endif()
 if(${USE_MURMUR_HASH} MATCHES "True")
   add_compile_definitions(_USE_MURMUR_HASH)
 endif()
+if(${USE_AOS} MATCHES "True")
+  add_compile_definitions(_USE_AOS)
+endif()
 
 pybind11_add_module(${PROJECT_NAME} ${SOURCES} "${SOURCE_DIR}/bindings.cpp")

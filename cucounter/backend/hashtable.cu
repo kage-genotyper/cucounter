@@ -25,7 +25,7 @@ void HashTable::initialize(const uint64_t *keys, const bool cuda_keys,
   cuda_errchk(cudaMalloc(&table_m.keys, sizeof(uint64_t)*capacity));
   cuda_errchk(cudaMemset(table_m.keys, 0xff, sizeof(uint64_t)*capacity));
   cuda_errchk(cudaMalloc(&table_m.values, sizeof(uint32_t)*capacity));
-  cuda_errchk(cudaMemset(table_m.values, 0xff, sizeof(uint32_t)*capacity));
+  cuda_errchk(cudaMemset(table_m.values, 0, sizeof(uint32_t)*capacity));
 
   uint64_t *d_keys;
   if (!cuda_keys) 
@@ -37,7 +37,11 @@ void HashTable::initialize(const uint64_t *keys, const bool cuda_keys,
   // Synchronize because cudaMemset is asynchronous with respect to host
   cuda_errchk(cudaDeviceSynchronize());
 
-  kernels::init_hashtable(table_m, cuda_keys ? keys : d_keys, size, capacity);
+#ifdef _USE_COOPERATIVE_GROUPS
+  kernels::cg_initialize_hashtable(table_m, cuda_keys ? keys : d_keys, size, capacity);
+#else
+  kernels::initialize_hashtable(table_m, cuda_keys ? keys : d_keys, size, capacity);
+#endif
 
   if (!cuda_keys) 
   {
@@ -53,16 +57,24 @@ void HashTable::get(const uint64_t *keys, uint32_t *counts, uint32_t size) const
   cuda_errchk(cudaMalloc(&d_counts, sizeof(uint32_t)*size));
   cuda_errchk(cudaMemcpy(d_keys, keys, sizeof(uint64_t)*size, cudaMemcpyHostToDevice));
 
+#ifdef _USE_COOPERATIVE_GROUPS
+  kernels::cg_lookup_hashtable(table_m, d_keys, d_counts, size, capacity_m); 
+#else
   kernels::lookup_hashtable(table_m, d_keys, d_counts, size, capacity_m); 
-  cuda_errchk(cudaMemcpy(counts, d_counts, sizeof(uint32_t)*size, cudaMemcpyDeviceToHost));
+#endif
 
+  cuda_errchk(cudaMemcpy(counts, d_counts, sizeof(uint32_t)*size, cudaMemcpyDeviceToHost));
   cuda_errchk(cudaFree(d_keys));
   cuda_errchk(cudaFree(d_counts));
 }
 
 void HashTable::cu_get(const uint64_t *keys, uint32_t *counts, uint32_t size) const 
 {
+#ifdef _USE_COOPERATIVE_GROUPS
+  kernels::cg_lookup_hashtable(table_m, keys, counts, size, capacity_m); 
+#else
   kernels::lookup_hashtable(table_m, keys, counts, size, capacity_m); 
+#endif
 }
 
 void HashTable::count(const uint64_t *keys, const uint32_t size,
@@ -113,7 +125,7 @@ void HashTable::cu_get_probe_lengths(
   kernels::get_probe_lengths(table_m, keys, lengths, size, capacity_m);
 }
 
-std::string HashTable::to_string() const 
+std::string HashTable::to_string(const bool full) const 
 {
   int print_size = (capacity_m < 40) ? capacity_m : 40;
 
@@ -136,7 +148,7 @@ std::string HashTable::to_string() const
     uint64_t key = keys[i];
     uint32_t value = values[i];
 
-    if (key == kEmpty) { continue; }
+    if (key == kEmpty && !full) { continue; }
 
     if (elements != 0) 
     { 
@@ -144,11 +156,20 @@ std::string HashTable::to_string() const
       values_oss << ", "; 
     }
 
-    keys_oss << key;
+    if (key == kEmpty)
+    {
+      keys_oss << "kEmp";
+    }
+    else
+    {
+      keys_oss << key;
+    }
+
+    //keys_oss << ((key == kEmpty) ? "E" : key);
     values_oss << value;
     
     elements++;
-    if (elements >= print_size) { break; }
+    if (elements >= print_size && !full) { break; }
   }
   keys_oss << "]";
   values_oss << "]";
