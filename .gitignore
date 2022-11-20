@@ -1,3 +1,10 @@
+main.py
+benchmark.py
+check_correctness.py
+data/
+npstructures/
+bionumpy/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

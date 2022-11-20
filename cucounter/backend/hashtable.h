@@ -5,20 +5,21 @@
 #include <inttypes.h>
 #include <string>
 
-#include <cuda.h>
 #include <cuda_runtime.h>
 
 #include "common.h"
 #include "kernels.h"
 
-class HashTable {
+class HashTable
+{
 public:
   HashTable() = default;
   HashTable(const uint64_t *keys, const bool cuda_keys, 
       const uint32_t size, const uint32_t capacity);
-  ~HashTable() { 
-    cudaFree(table_m.keys); 
-    cudaFree(table_m.values); 
+  ~HashTable() 
+  { 
+    cuda_errchk(cudaFree(table_m.keys)); 
+    cuda_errchk(cudaFree(table_m.values)); 
   }
 
   uint32_t size() const { return size_m; }
@@ -26,13 +27,16 @@ public:
 
   void count(const uint64_t *keys, const uint32_t size, 
       const bool count_revcomps, const uint8_t kmer_size);
-  void countcu(const uint64_t *keys, const uint32_t size,
+  void cu_count(const uint64_t *keys, const uint32_t size,
       const bool count_revcomps, const uint8_t kmer_size);
 
   void get(const uint64_t *keys, uint32_t *counts, uint32_t size) const;
-  void getcu(const uint64_t *keys, uint32_t *counts, uint32_t size) const;
+  void cu_get(const uint64_t *keys, uint32_t *counts, uint32_t size) const;
 
-  std::string to_string() const;
+  void get_probe_lengths(const uint64_t *keys, uint32_t *lengths, const uint32_t size) const;
+  void cu_get_probe_lengths(const uint64_t *keys, uint32_t *lengths, const uint32_t size) const;
+
+  std::string to_string(const bool full) const;
 private:
   uint32_t size_m;
   uint32_t capacity_m;
