@@ -10,6 +10,8 @@ set(CMAKE_CUDA_FLAGS "-O3")
 
 set(SOURCE_DIR "cucounter/backend")
 include_directories(${SOURCE_DIR})
+include_directories("/usr/local/cuda-11.4/targets/x86_64-linux/include/")
+
 
 set(SOURCES 
   "${SOURCE_DIR}/kernels.cu"

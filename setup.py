@@ -71,7 +71,6 @@ setup(
     description="A hashtable based counter implemented in CUDA for high throughput.",
     long_description="",
     packages=find_packages("cucounter"),
-    package_dir={"":"cucounter"},
     ext_modules=[CMakeExtension("cucounter_C")],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
