@@ -1,7 +1,7 @@
 import numpy as np
 import cupy as cp
 
-from cucounter_C import HashTable
+from cucounter_backend import HashTable
 
 class Counter(HashTable):
     def __init__(self, keys, capacity: int = 0, capacity_factor: float = 1.7331):

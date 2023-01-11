@@ -9,9 +9,9 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(cucounter_C, m) 
+PYBIND11_MODULE(cucounter_backend, m) 
 {
-  m.doc() = "Documentation for the cucounter module";
+  m.doc() = "Documentation for the cucounter backend module";
 
   py::class_<HashTable>(m, "HashTable")
     .def(py::init([](py::array_t<uint64_t> &keys, const uint32_t capacity) 

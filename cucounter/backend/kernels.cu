@@ -24,7 +24,7 @@ __device__ __forceinline__ static uint64_t word_reverse_complement(
 
 __device__ __forceinline__ static uint64_t murmur_hash(uint64_t kmer) 
 {
-#ifdef _USE_MURMUR_HASH
+#ifdef __USE_MURMUR_HASH__
   kmer ^= kmer >> 33;
   kmer *= 0xff51afd7ed558ccd;
   kmer ^= kmer >> 33;
