@@ -32,7 +32,10 @@ kmers = np.random.randint(low=0, high=0xFFFFFFFFFFFFFFFF, size=(200000000,), dty
 counter.count(kmers)
 
 # Fetch the observed frequencies for the original key set
-counts = counter[unique_kmers]
+counts = counter[unique_kmers] 
+
+counts.dtype # np.uint32
+counts.shape # (100000000,)
 ```
 
 CuCounter also supports counting the reverse complements of *k*mers aswell as the original *k*mer.
