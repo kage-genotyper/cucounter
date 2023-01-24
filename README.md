@@ -4,10 +4,11 @@
 CuCounter requires NumPy and CuPy. It also currently only supports Nvidia GPUs with CUDA.
 CuCounter is currently not on PyPI, so in order to install CuCounter:
 * clone the CuCounter repository
-* use pip to install CuCounter from inside the cloned repository
+* use pip to install all necessary dependencies as well as CuCounter from inside the cloned repository
 ```Bash
 git clone https://github.com/jorgenwh/cucounter.git
 cd cucounter
+pip install -r requirements.txt
 pip install .
 ```
 
