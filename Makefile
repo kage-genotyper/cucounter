@@ -9,4 +9,4 @@ uninstall: clean
 	pip uninstall cucounter
 
 clean:
-	$(RM) -rf build cucounter.egg-info
+	$(RM) -rf build cucounter.egg-info *.so
