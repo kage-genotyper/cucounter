@@ -1,3 +1,9 @@
+[project] # Project metadata
+name="cucounter"
+readme="README.md"
+dependencies=["numpy", "cupy"]
+version="1.0.0"
+
 [build-system]
 requires = [
   "setuptools>=58.1.0",
