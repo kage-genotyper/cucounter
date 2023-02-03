@@ -2,23 +2,50 @@ import numpy as np
 import cupy as cp
 
 from cucounter_backend import HashTable
+from cucounter_backend import get_free_cuda_memory
 
 class Counter(HashTable):
-    def __init__(self, keys, capacity: int = 0, capacity_factor: float = 1.7331):
+    def __init__(self, keys, capacity: int = None, target_load_factor: float = None):
         assert isinstance(keys, (np.ndarray, cp.ndarray)), "keys must be numpy or cupy ndarray"
         assert keys.dtype == np.uint64, "keys.dtype must be uint64"
-        assert capacity_factor > 1.0, "capacity_factor must be greater than 1.0"
 
-        # Dynamically determine hashtable capacity if not provided
-        if capacity == 0:
-            capacity = int(keys.size * capacity_factor) 
+        # get currently available cuda memory
+        free_cuda_mem = get_free_cuda_memory()
+        
+        print(f"keys.size={keys.size}")
+        print(f"free_cuda_mem={free_cuda_mem}")
 
-        assert capacity > keys.size, "Capacity must be greater than size of keyset"
+        if capacity is not None:
+            assert isinstance(capacity, int), "capacity must be integer"
+            assert capacity > 0
+        
+        if target_load_factor is not None:
+            assert isinstance(target_load_factor, float), "target_load_factor must be float"
+            assert target_load_factor > 0 and target_load_factor < 1.0
+
+        keyset_size = keys.size
+
+        if capacity is None and target_load_factor is None:
+            # temporary solution until dynamic memory allocation works
+            capacity = int(keyset_size // 0.5771)
+        elif capacity is None and target_load_factor is not None:
+            capacity = int(keyset_size // target_load_factor)
 
         if isinstance(keys, np.ndarray):
             super().__init__(keys, capacity)
         elif isinstance(keys, cp.ndarray):
             super().__init__(keys.data.ptr, keys.size, capacity)
+
+        self._capacity = capacity
+        self._load_factor = keyset_size / capacity
+
+    @property
+    def capacity(self) -> int:
+        return self._capacity
+
+    @property
+    def load_factor(self) -> float:
+        return self._load_factor
 
     def count(self, keys, count_revcomps=False, kmer_size=32):
         """

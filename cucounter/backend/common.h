@@ -1,6 +1,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <cuda_runtime.h>
 

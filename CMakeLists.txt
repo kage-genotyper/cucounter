@@ -12,6 +12,7 @@ set(SOURCE_DIR "cucounter/backend")
 include_directories(${SOURCE_DIR})
 
 set(SOURCES 
+  "${SOURCE_DIR}/util.cu"
   "${SOURCE_DIR}/kernels.cu"
   "${SOURCE_DIR}/hashtable.cu"
 )

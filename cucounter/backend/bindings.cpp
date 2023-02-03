@@ -5,6 +5,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 
+#include "util.h"
 #include "hashtable.h"
 
 namespace py = pybind11;
@@ -12,6 +13,8 @@ namespace py = pybind11;
 PYBIND11_MODULE(cucounter_backend, m) 
 {
   m.doc() = "Documentation for the cucounter backend module";
+
+  m.def("get_free_cuda_memory", &get_free_cuda_memory);
 
   py::class_<HashTable>(m, "HashTable")
     .def(py::init([](py::array_t<uint64_t> &keys, const uint32_t capacity) 
