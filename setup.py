@@ -9,10 +9,9 @@ from setuptools.command.build_ext import build_ext
 
 
 CUDA_ERROR_CHECK = True
-USE_COOPERATIVE_GROUPS = True
+USE_COOPERATIVE_GROUPS = False
 COOPERATIVE_GROUP_SIZE = 4
 USE_MURMUR_HASH = True
-USE_AOS = True
 
 
 class CMakeExtension(Extension):
@@ -60,13 +59,13 @@ class CMakeBuild(build_ext):
             build_args += ["--", "-j2"]
 
         global CUDA_ERROR_CHECK 
-        global USE_COOPERATIVE_GROUPS 
-        global COOPERATIVE_GROUP_SIZE
-        global USE_MURMUR_HASH
         cmake_args += ["-DCUDA_ERROR_CHECK=" + str(CUDA_ERROR_CHECK)]
+        global USE_COOPERATIVE_GROUPS 
         cmake_args += ["-DUSE_COOPERATIVE_GROUPS=" + str(USE_COOPERATIVE_GROUPS)]
+        global COOPERATIVE_GROUP_SIZE
         if COOPERATIVE_GROUP_SIZE in [1, 2, 4, 8, 16, 32]:
             cmake_args += ["-DCOOPERATIVE_GROUP_SIZE=" + str(COOPERATIVE_GROUP_SIZE)]
+        global USE_MURMUR_HASH
         cmake_args += ["-DUSE_MURMUR_HASH=" + str(USE_MURMUR_HASH)]
 
         env = os.environ.copy()
@@ -83,13 +82,13 @@ class CMakeBuild(build_ext):
 
 setup(
     name="kage-cucounter",
-    version="0.0.5",
+    version="1.0.1",
     install_requires=["numpy"],
     author="Jørgen Henriksen",
     description="A hashtable based counter implemented in CUDA for high throughput.",
     long_description="",
     packages=["cucounter"],
-    ext_modules=[CMakeExtension("cucounter_C")],
+    ext_modules=[CMakeExtension("cucounter_backend")],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
 )

@@ -1,6 +1,12 @@
+[project] # Project metadata
+name="cucounter"
+readme="README.md"
+dependencies=[]
+version="1.0.0"
+
 [build-system]
 requires = [
-  "setuptools>=58.1.0",
-  "pybind11[global]>=2.10.0",
+  "setuptools",
+  "pybind11[global]",
 ]
 build-backend = "setuptools.build_meta"

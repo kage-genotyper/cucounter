@@ -37,7 +37,7 @@ void HashTable::initialize(const uint64_t *keys, const bool cuda_keys,
   // Synchronize because cudaMemset is asynchronous with respect to host
   cuda_errchk(cudaDeviceSynchronize());
 
-#ifdef _USE_COOPERATIVE_GROUPS
+#ifdef __USE_COOPERATIVE_GROUPS__
   kernels::cg_initialize_hashtable(table_m, cuda_keys ? keys : d_keys, size, capacity);
 #else
   kernels::initialize_hashtable(table_m, cuda_keys ? keys : d_keys, size, capacity);
@@ -57,7 +57,7 @@ void HashTable::get(const uint64_t *keys, uint32_t *counts, uint32_t size) const
   cuda_errchk(cudaMalloc(&d_counts, sizeof(uint32_t)*size));
   cuda_errchk(cudaMemcpy(d_keys, keys, sizeof(uint64_t)*size, cudaMemcpyHostToDevice));
 
-#ifdef _USE_COOPERATIVE_GROUPS
+#ifdef __USE_COOPERATIVE_GROUPS__
   kernels::cg_lookup_hashtable(table_m, d_keys, d_counts, size, capacity_m); 
 #else
   kernels::lookup_hashtable(table_m, d_keys, d_counts, size, capacity_m); 
@@ -70,7 +70,7 @@ void HashTable::get(const uint64_t *keys, uint32_t *counts, uint32_t size) const
 
 void HashTable::cu_get(const uint64_t *keys, uint32_t *counts, uint32_t size) const 
 {
-#ifdef _USE_COOPERATIVE_GROUPS
+#ifdef __USE_COOPERATIVE_GROUPS__
   kernels::cg_lookup_hashtable(table_m, keys, counts, size, capacity_m); 
 #else
   kernels::lookup_hashtable(table_m, keys, counts, size, capacity_m); 
@@ -84,7 +84,7 @@ void HashTable::count(const uint64_t *keys, const uint32_t size,
   cuda_errchk(cudaMalloc(&d_keys, sizeof(uint64_t)*size));
   cuda_errchk(cudaMemcpy(d_keys, keys, sizeof(uint64_t)*size, cudaMemcpyHostToDevice));
 
-#ifdef _USE_COOPERATIVE_GROUPS
+#ifdef __USE_COOPERATIVE_GROUPS__
   kernels::cg_count_hashtable(table_m, d_keys, size, capacity_m, count_revcomps, kmer_size);
 #else
   kernels::count_hashtable(table_m, d_keys, size, capacity_m, count_revcomps, kmer_size);
@@ -96,7 +96,7 @@ void HashTable::count(const uint64_t *keys, const uint32_t size,
 void HashTable::cu_count(const uint64_t *keys, const uint32_t size,
     const bool count_revcomps, const uint8_t kmer_size) 
 {
-#ifdef _USE_COOPERATIVE_GROUPS
+#ifdef __USE_COOPERATIVE_GROUPS__
   kernels::cg_count_hashtable(table_m, keys, size, capacity_m, count_revcomps, kmer_size);
 #else
   kernels::count_hashtable(table_m, keys, size, capacity_m, count_revcomps, kmer_size);
@@ -165,7 +165,6 @@ std::string HashTable::to_string(const bool full) const
       keys_oss << key;
     }
 
-    //keys_oss << ((key == kEmpty) ? "E" : key);
     values_oss << value;
     
     elements++;

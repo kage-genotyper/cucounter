@@ -2,11 +2,10 @@
 #define COMMON_H_
 
 #include <stdio.h>
-
 #include <cuda_runtime.h>
 
-#ifdef _COOPERATIVE_GROUP_SIZE
-static const unsigned int cg_size = _COOPERATIVE_GROUP_SIZE;
+#ifdef __COOPERATIVE_GROUP_SIZE__
+static const unsigned int cg_size = __COOPERATIVE_GROUP_SIZE__;
 #else
 static const unsigned int cg_size = 4;
 #endif
@@ -17,7 +16,7 @@ static const uint64_t kEmpty = 0xffffffffffffffff;
 
 inline void cuda_errcheck(cudaError_t code, const char *file, int line, bool abort=true) 
 {
-#ifdef _CUDA_ERROR_CHECK
+#ifdef __CUDA_ERROR_CHECK__
   if (code != cudaSuccess) 
   {
     switch (code) 
@@ -30,7 +29,7 @@ inline void cuda_errcheck(cudaError_t code, const char *file, int line, bool abo
     }
     exit(code);
   }
-#endif // _CUDA_ERROR_CHECK
+#endif // __CUDA_ERROR_CHECK__
 }
 
 struct Table 
