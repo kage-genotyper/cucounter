@@ -3,6 +3,8 @@
 ## Installation
 CuCounter requires NumPy and CuPy. It also currently only supports Nvidia GPUs with CUDA.
 
+Before installing, make sure you have cupy and CUDA installed, see the [CuPy installation guide](https://docs.cupy.dev/en/stable/install.html) for more information.
+
 Cucounter can be installed using pip:
 ```Bash
 pip install kage-cucounter
