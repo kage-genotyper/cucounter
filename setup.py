@@ -82,12 +82,13 @@ class CMakeBuild(build_ext):
 
 
 setup(
-    name="cucounter",
-    version="0.0.1",
+    name="kage-cucounter",
+    version="0.0.5",
+    install_requires=["numpy"],
     author="Jørgen Henriksen",
     description="A hashtable based counter implemented in CUDA for high throughput.",
     long_description="",
-    packages=find_packages("cucounter"),
+    packages=["cucounter"],
     ext_modules=[CMakeExtension("cucounter_C")],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
